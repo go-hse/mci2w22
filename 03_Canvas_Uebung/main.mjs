@@ -61,20 +61,24 @@ function line(ctx, x1, y1, x2, y2, strokeStyle = "#fff", lineWidth = 1) {
         ctx.save();
         angle = min * Math.PI / 30;
         ctx.rotate(angle);
-        line(ctx, 0, 0, 0, -size, "#fff", 8);
+        line(ctx, 0, 0, 0, -size, "#fff", 6);
         ctx.restore();
 
         ctx.save();
         angle = hrs * Math.PI / 6;
         ctx.rotate(angle);
-        line(ctx, 0, 0, 0, -size / 2, "#fff", 8);
+        line(ctx, 0, 0, 0, -size / 2, "#fff", 12);
         ctx.restore();
 
         for (let s = 0; s < 60; ++s) {
             ctx.save();
             angle = s * Math.PI / 30;
             ctx.rotate(angle);
-            line(ctx, 0, -size * 0.9, 0, -size, "#666", 2);
+            if (s % 5 == 0) {
+                line(ctx, 0, -size * 0.9, 0, -size * 1.1, "#666", 2);
+            } else {
+                line(ctx, 0, -size * 0.9, 0, -size, "#666", 2);
+            }
             ctx.restore();
         }
 
