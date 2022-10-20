@@ -70,6 +70,14 @@ function line(ctx, x1, y1, x2, y2, strokeStyle = "#fff", lineWidth = 1) {
         line(ctx, 0, 0, 0, -size / 2, "#fff", 8);
         ctx.restore();
 
+        for (let s = 0; s < 60; ++s) {
+            ctx.save();
+            angle = s * Math.PI / 30;
+            ctx.rotate(angle);
+            line(ctx, 0, -size * 0.9, 0, -size, "#666", 2);
+            ctx.restore();
+        }
+
         window.requestAnimationFrame(draw);
     }
     resize();
