@@ -6,6 +6,16 @@ function rect(ctx, x, y, w, h, fillStyle = "#f00", strokeStyle = "#fff", lineWid
     ctx.strokeRect(x, y, w, h);
 }
 
+function line(ctx, x1, y1, x2, y2, strokeStyle = "#fff", lineWidth = 1) {
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = strokeStyle;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+}
+
+
 (function Init() {
     let cnv = document.getElementById("cnv");
     let ctx = cnv.getContext("2d");
@@ -33,29 +43,32 @@ function rect(ctx, x, y, w, h, fillStyle = "#f00", strokeStyle = "#fff", lineWid
     }
 
     function draw() {
-        const size = cnv.width / 10;
+        const { sec, min, hrs } = getTime();
+
+        const size = cnv.width / 3;
         ctx.resetTransform();
         ctx.clearRect(0, 0, cnv.width, cnv.height);
 
-        ctx.translate(size, size);
+        ctx.translate(cnv.width / 2, cnv.height / 2);
+        rect(ctx, 0, 0, 10, 10, "#f00");
 
+        ctx.save();
+        let angle = sec * Math.PI / 30;
+        ctx.rotate(angle);
+        line(ctx, 0, 0, 0, -size, "#f00", 4);
+        ctx.restore();
 
-        for (let i = 0; i < 64; ++i) {
-            let x = i % 8;
-            let y = Math.floor(i / 8);
-            ctx.save();
-            // console.log(`${x}/${y}`);
-            ctx.translate((x + 1) * size, (y + 1) * size);
+        ctx.save();
+        angle = min * Math.PI / 30;
+        ctx.rotate(angle);
+        line(ctx, 0, 0, 0, -size, "#fff", 8);
+        ctx.restore();
 
-            // if (i % 2 === 1)
-            if (y % 2 === 0 && i % 2 === 0 || y % 2 === 1 && i % 2 === 1)
-                rect(ctx, 0, 0, size, size, "#fff", "#444");
-            else
-                rect(ctx, 0, 0, size, size, "#000", "#444");
-
-            ctx.restore();
-        }
-
+        ctx.save();
+        angle = hrs * Math.PI / 6;
+        ctx.rotate(angle);
+        line(ctx, 0, 0, 0, -size / 2, "#fff", 8);
+        ctx.restore();
 
         window.requestAnimationFrame(draw);
     }
