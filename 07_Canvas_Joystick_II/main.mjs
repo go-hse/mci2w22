@@ -47,16 +47,14 @@ const FONTSIZE = 30;
 
     const BORDER = 20;
     function draw() {
+        ctx.clearRect(0, 0, cnv.width, cnv.height);
         ctx.resetTransform();
         ctx.scale(scale, scale);
         ctx.font = FONTSIZE + "px Arial";
-        ctx.clearRect(0, 0, cnv.width, cnv.height);
         rect(ctx, BORDER, BORDER, nativeWidth - 2 * BORDER, nativeHeight - 2 * BORDER, "#aaa");
         text(ctx, 10, 20, info);
         joystick.draw();
         ship.draw();
-
-
         window.requestAnimationFrame(draw);
     }
     resize();
