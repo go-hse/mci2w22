@@ -6,7 +6,7 @@ const FONTSIZE = 30;
 (function Init() {
     let cnv = document.getElementById("cnv");
     let ctx = cnv.getContext("2d");
-    let ship = createMoveable(ctx, 200, 200, tri_path(), 20);
+    let ship = createMoveable(ctx, 200, 200, tri_path(), 10);
     let joystick = createJoystick(ctx, 40, ship.move);
 
 
