@@ -1,94 +1,98 @@
-import { drawPathFunc, distance } from "./lib.mjs";
+import { drawPathFunc, distance, circle } from "./lib.mjs";
 
+export function createJoystick(ctx, r, cb) {
+    let identifier, ialpha = undefined, rotation = 0, x = 0, y = 0;
 
-function createMoveable(ctx, x, y, path, scale) {
-    let alpha = 0;
-    let no_of_fingers = 0;
-    let inside = {};
-    let drawfunc = drawPathFunc(ctx, path);
-    let matrix = drawfunc(x, y, alpha, scale, "#333");
-    let localInverse = DOMMatrix.fromMatrix(matrix); // matrix = M/L
-    localInverse.invertSelf();
-
-    let o_alpha = 0, o_distance = 0;
     function draw() {
-        if (no_of_fingers === 0) {
-            matrix = drawfunc(x, y, alpha, scale, "#333");
-        }
-        if (no_of_fingers === 1) {
-            matrix = drawfunc(x, y, alpha, scale, "#339");
-        }
-        if (no_of_fingers === 2) {
-            matrix = drawfunc(x, y, alpha, scale, "#939");
-        }
-        localInverse = DOMMatrix.fromMatrix(matrix); // matrix = M/L
-        localInverse.invertSelf();
+        if (identifier !== undefined) {
+            if (rotation !== undefined) {
+                ctx.fillStyle = "#666";
+                ctx.lineWidth = 10;
+                ctx.strokeStyle = "#777";
+                ctx.beginPath();
+                let rscale = rotation * 10;
+                if (rotation < 0)
+                    ctx.arc(x, y, r + 10, ialpha, ialpha + rscale, true);
+                else
+                    ctx.arc(x, y, r + 10, ialpha + rscale, ialpha, true);
+                ctx.fill();
+                ctx.stroke();
+            }
+            circle(ctx, x, y, r, "#ff0");
+        } else
+            circle(ctx, x, y, r, "#0f0");
     }
 
-    function isInside(identifier, ix, iy) {
-        let localTouchPoint = localInverse.transformPoint(new DOMPoint(ix, iy));
-        if (ctx.isPointInPath(path, localTouchPoint.x, localTouchPoint.y)) {
-            inside[identifier] = {
-                x: ix,
-                y: iy,
-                dx: 0,
-                dy: 0
+    function resize(w, h) {
+        x = w - 100;
+        y = h - 100;
+    }
+
+    function is_touched(touches) {
+        if (identifier === undefined) {
+            for (let t of touches) {
+                if (distance(x, y, t.pageX, t.pageY) < r) {
+                    identifier = t.identifier;
+                    return;
+                }
             }
-        }
-        let keys = Object.keys(inside);
-        let f0 = keys[0];
-        let f1 = keys[1];
-        no_of_fingers = keys.length;
-        if (no_of_fingers === 2) {
-            o_alpha = Math.atan2(inside[f1].y - inside[f0].y, inside[f1].x - inside[f0].x);
-            o_distance = distance(inside[f0].x, inside[f0].y, inside[f1].x, inside[f1].y)
         }
     }
 
     function move(touches) {
-        for (let t of touches) {
-            if (t.identifier in inside) {
-                let o = inside[t.identifier];
-                o.dx = t.pageX - o.x;
-                o.dy = t.pageY - o.y;
-                o.x = t.pageX;
-                o.y = t.pageY;
+        if (identifier !== undefined) {
+            for (let t of touches) {
+                if (t.identifier === identifier) {
+                    let rn = distance(x, y, t.pageX, t.pageY);
+                    if (rn > r) {
+                        let nalpha = Math.atan2(t.pageY - y, t.pageX - x);
+                        if (ialpha === undefined) {
+                            ialpha = nalpha;
+                        }
+                        rotation = (nalpha - ialpha) / 20;
+                        cb(2 * rn / r, rotation);
+                    }
+                }
             }
-        }
-
-        switch (no_of_fingers) {
-            case 1:
-                let f = Object.keys(inside)[0];
-                x += inside[f].dx;
-                y += inside[f].dy;
-                break;
-            case 2:
-                let keys = Object.keys(inside);
-                let f0 = keys[0];
-                let f1 = keys[1];
-                x += (inside[f0].dx + inside[f1].dx) / 2;
-                y += (inside[f0].dy + inside[f1].dy) / 2;
-
-                let n_alpha = Math.atan2(inside[f1].y - inside[f0].y, inside[f1].x - inside[f0].x);
-                let n_distance = distance(inside[f0].x, inside[f0].y, inside[f1].x, inside[f1].y)
-                alpha += n_alpha - o_alpha;
-                scale *= n_distance / o_distance;
-                o_alpha = n_alpha;
-                o_distance = n_distance;
-                break;
         }
     }
 
-    function reset(identifier) {
-        if (identifier in inside) {
-            delete inside[identifier];
-            no_of_fingers = Object.keys(inside).length;
+    function reset(touches) {
+        if (identifier !== undefined) {
+            for (let t of touches) {
+                if (t.identifier === identifier) {
+                    cb(0, 0);
+                    identifier = undefined;
+                    ialpha = undefined;
+                    return;
+                }
+            }
         }
     }
     return {
-        draw, reset, isInside, move
+        draw, reset, is_touched, move, resize
     };
 }
 
 
-export { createMoveable };
+export function createMoveable(ctx, x, y, path, scale) {
+    let alpha = 0, speed = 0, rotation = 0;
+    let drawfunc = drawPathFunc(ctx, path);
+
+    function draw() {
+        alpha += rotation;
+        x += speed * Math.cos(alpha);
+        y += speed * Math.sin(alpha);
+        drawfunc(x, y, alpha - Math.PI / 2, scale, "#333");
+    }
+
+    function move(s, r) {
+        speed = s;
+        rotation = r;
+    }
+
+    return {
+        draw, move
+    };
+}
+
