@@ -21,6 +21,7 @@ function createButton(ctx, x, y, r, col, cb) {
         touched = distance(ix, iy, x, y) < r;
         if (touched) cb(col);
     }
+
     function reset() {
         touched = false;
     }
@@ -28,8 +29,6 @@ function createButton(ctx, x, y, r, col, cb) {
         draw, reset, is_touched
     };
 }
-
-
 
 (function Init() {
     let cnv = document.getElementById("cnv");
