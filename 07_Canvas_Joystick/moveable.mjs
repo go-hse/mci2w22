@@ -5,16 +5,16 @@ export function createJoystick(ctx, r, cb) {
 
     function draw() {
         if (identifier !== undefined) {
-            if (rotation !== undefined) {
+            if (ialpha !== undefined) {
                 ctx.fillStyle = "#666";
                 ctx.lineWidth = 10;
                 ctx.strokeStyle = "#777";
                 ctx.beginPath();
                 let rscale = rotation * 10;
                 if (rotation < 0)
-                    ctx.arc(x, y, r + 10, ialpha, ialpha + rscale, true);
+                    ctx.arc(x, y, r + 30, ialpha, ialpha + rscale, true);
                 else
-                    ctx.arc(x, y, r + 10, ialpha + rscale, ialpha, true);
+                    ctx.arc(x, y, r + 30, ialpha + rscale, ialpha, true);
                 ctx.fill();
                 ctx.stroke();
             }
