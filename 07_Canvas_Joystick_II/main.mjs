@@ -9,7 +9,11 @@ const FONTSIZE = 30;
     let ship = createMoveable(ctx, 200, 200, tri_path(), 20);
     let joystick = createJoystick(ctx, 40, ship.move);
 
+    const nativeWidth = 1024;
+    const nativeHeight = 768;
 
+    let scale = 1.0;
+    const FILLSCALE = false;
     ctx.imageSmoothingEnabled = true;
 
     console.log(new Date());
@@ -17,7 +21,10 @@ const FONTSIZE = 30;
     function resize() {
         cnv.width = window.innerWidth;
         cnv.height = window.innerHeight;
-        joystick.resize(cnv.width, cnv.height);
+        let scaleFillNative = Math.max(cnv.width / nativeWidth, cnv.height / nativeHeight);
+        let scaleFitNative = Math.min(cnv.width / nativeWidth, cnv.height / nativeHeight);
+        scale = FILLSCALE ? scaleFillNative : scaleFitNative;
+        joystick.resize(nativeWidth, nativeHeight);
     }
     addEventListener("resize", resize);
 
@@ -38,13 +45,18 @@ const FONTSIZE = 30;
 
     let info = "no info";
 
+    const BORDER = 20;
     function draw() {
         ctx.resetTransform();
+        ctx.scale(scale, scale);
         ctx.font = FONTSIZE + "px Arial";
         ctx.clearRect(0, 0, cnv.width, cnv.height);
+        rect(ctx, BORDER, BORDER, nativeWidth - 2 * BORDER, nativeHeight - 2 * BORDER, "#aaa");
         text(ctx, 10, 20, info);
         joystick.draw();
         ship.draw();
+
+
         window.requestAnimationFrame(draw);
     }
     resize();

@@ -1,6 +1,5 @@
 import { drawPathFunc, distance, circle } from "./lib.mjs";
 
-
 const lerp = (start, end, amt) => start + (end - start) * amt
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 const repeat = (t, m) => clamp(t - Math.floor(t / m) * m, 0, m);
@@ -22,8 +21,8 @@ export function createJoystick(ctx, r, cb) {
     }
 
     function resize(w, h) {
-        x = w - 100;
-        y = h - 100;
+        x = w - r;
+        y = h - r;
     }
 
     function is_touched(touches) {
@@ -75,7 +74,6 @@ export function createMoveable(ctx, x, y, path, scale) {
     let drawfunc = drawPathFunc(ctx, path);
 
     function draw() {
-        // alpha += rotation;
         x += dx / 10;
         y += dy / 10;
         t = t < 1 ? t + 0.1 : t;
