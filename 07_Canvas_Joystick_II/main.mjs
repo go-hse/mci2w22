@@ -24,7 +24,7 @@ const FONTSIZE = 30;
         let scaleFillNative = Math.max(cnv.width / nativeWidth, cnv.height / nativeHeight);
         let scaleFitNative = Math.min(cnv.width / nativeWidth, cnv.height / nativeHeight);
         scale = FILLSCALE ? scaleFillNative : scaleFitNative;
-        joystick.resize(nativeWidth, nativeHeight);
+        joystick.resize(nativeWidth, nativeHeight, scale);
     }
     addEventListener("resize", resize);
 

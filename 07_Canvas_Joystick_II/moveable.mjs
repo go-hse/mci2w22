@@ -11,7 +11,7 @@ function lerpTheta(a, b, t) {
 
 
 export function createJoystick(ctx, r, cb) {
-    let identifier, x = 0, y = 0;
+    let identifier, x = 0, y = 0, scale = 1;
 
     function draw() {
         if (identifier !== undefined) {
@@ -20,15 +20,16 @@ export function createJoystick(ctx, r, cb) {
             circle(ctx, x, y, r, "#0f0");
     }
 
-    function resize(w, h) {
+    function resize(w, h, s) {
         x = w - r;
         y = h - r;
+        scale = s;
     }
 
     function is_touched(touches) {
         if (identifier === undefined) {
             for (let t of touches) {
-                if (distance(x, y, t.pageX, t.pageY) < r) {
+                if (distance(x, y, t.pageX / scale, t.pageY / scale) < r) {
                     identifier = t.identifier;
                     return;
                 }
@@ -40,10 +41,12 @@ export function createJoystick(ctx, r, cb) {
         if (identifier !== undefined) {
             for (let t of touches) {
                 if (t.identifier === identifier) {
-                    let rn = distance(x, y, t.pageX, t.pageY);
+                    let tx = t.pageX / scale;
+                    let ty = t.pageY / scale;
+                    let rn = distance(x, y, tx, ty);
                     if (rn > r) {
-                        let dx = t.pageX - x;
-                        let dy = t.pageY - y;
+                        let dx = tx - x;
+                        let dy = ty - y;
                         cb(dx, dy);
                     }
                     return;
