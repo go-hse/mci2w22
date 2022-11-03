@@ -1,5 +1,17 @@
 import { drawPathFunc, distance, circle } from "./lib.mjs";
 
+const PI = Math.PI;
+const TPI = 2 * PI;
+
+function delta(alpha, beta) {
+    let a = alpha - beta;
+    return modulo(a + PI, TPI) - PI;
+}
+
+function modulo(a, n) {
+    return a - Math.floor(a / n) * n;
+}
+
 export function createJoystick(ctx, r, cb) {
     let identifier, ialpha = undefined, rotation = 0, x = 0, y = 0;
 
@@ -7,14 +19,14 @@ export function createJoystick(ctx, r, cb) {
         if (identifier !== undefined) {
             if (ialpha !== undefined) {
                 ctx.fillStyle = "#666";
-                ctx.lineWidth = 10;
+                ctx.lineWidth = 20;
                 ctx.strokeStyle = "#777";
                 ctx.beginPath();
                 let rscale = rotation * 10;
                 if (rotation < 0)
-                    ctx.arc(x, y, r + 30, ialpha, ialpha + rscale, true);
+                    ctx.arc(x, y, r + 20, ialpha, ialpha + rscale, true);
                 else
-                    ctx.arc(x, y, r + 30, ialpha + rscale, ialpha, true);
+                    ctx.arc(x, y, r + 20, ialpha + rscale, ialpha, true);
                 ctx.fill();
                 ctx.stroke();
             }
@@ -49,7 +61,8 @@ export function createJoystick(ctx, r, cb) {
                         if (ialpha === undefined) {
                             ialpha = nalpha;
                         }
-                        rotation = (nalpha - ialpha) / 20;
+                        let d = delta(nalpha, ialpha);
+                        rotation = d / 20;
                         cb(2 * rn / r, rotation);
                     }
                 }
@@ -74,7 +87,6 @@ export function createJoystick(ctx, r, cb) {
     };
 }
 
-
 export function createMoveable(ctx, x, y, path, scale) {
     let alpha = 0, speed = 0, rotation = 0;
     let drawfunc = drawPathFunc(ctx, path);
@@ -83,7 +95,7 @@ export function createMoveable(ctx, x, y, path, scale) {
         alpha += rotation;
         x += speed * Math.cos(alpha);
         y += speed * Math.sin(alpha);
-        drawfunc(x, y, alpha - Math.PI / 2, scale, "#333");
+        drawfunc(x, y, alpha - PI / 2, scale, "#333");
     }
 
     function move(s, r) {
