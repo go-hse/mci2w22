@@ -52,7 +52,7 @@ const FONTSIZE = 30;
         ctx.scale(scale, scale);
         ctx.font = FONTSIZE + "px Arial";
         rect(ctx, BORDER, BORDER, nativeWidth - 2 * BORDER, nativeHeight - 2 * BORDER, "#aaa");
-        text(ctx, 10, 20, info);
+        text(ctx, nativeWidth / 2, nativeHeight / 2, info);
         joystick.draw();
         ship.draw();
         window.requestAnimationFrame(draw);
