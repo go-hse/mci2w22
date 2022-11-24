@@ -2,6 +2,17 @@ import * as THREE from '../99_Lib/three.module.js';
 console.log("ThreeJs " + THREE.REVISION);
 
 let scene = new THREE.Scene();
+let world = new THREE.Group();
+world.matrixAutoUpdate = false;
+
+let forward = 0, leftright = 0;
+const speed = 0.01;
+
+let rot_speed = new THREE.Quaternion();
+let trans_speed = new THREE.Vector3();
+let scale = new THREE.Vector3(1, 1, 1);
+let speed_matrix = new THREE.Matrix4();
+
 scene.add(new THREE.HemisphereLight(0x202080, 0x606060));
 
 let light = new THREE.DirectionalLight(0xffffff, 1);
@@ -23,7 +34,8 @@ let box = new THREE.Mesh(new THREE.BoxGeometry(1, 0.1, 0.2),
     }));
 box.castShadow = true;
 box.position.x = -1;
-scene.add(box);
+// scene.add(box);
+world.add(box);
 
 let static_box = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1, 0.1),
     new THREE.MeshStandardMaterial({
@@ -32,6 +44,9 @@ let static_box = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1, 0.1),
     }));
 
 static_box.castShadow = true;
+world.add(static_box);
+
+scene.add(world);
 
 let cursor = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.5, 4), new THREE.MeshStandardMaterial({
     color: 0xff0000,
@@ -68,11 +83,11 @@ function keyboard() {
 
 const addKey = keyboard();
 
-addKey("Escape", () => { console.log("Escape") });
-addKey("ArrowUp", () => { console.log("Up") });
-addKey("ArrowDown", () => { console.log("Up") });
-addKey("ArrowLeft", () => { console.log("Up") });
-addKey("ArrowRight", () => { console.log("Up") });
+addKey("Escape", () => { forward = 0; leftright = 0; });
+addKey("ArrowUp", () => { forward += speed; });
+addKey("ArrowDown", () => { forward -= speed; });
+addKey("ArrowLeft", () => { leftright -= speed; });
+addKey("ArrowRight", () => { leftright += speed; });
 
 function mouse() {
     const mouseScale = 0.002;
@@ -112,7 +127,6 @@ function mouse() {
 
 mouse();
 
-scene.add(static_box);
 static_box.position.x = 0.5;
 
 let renderer = new THREE.WebGLRenderer({
@@ -127,15 +141,20 @@ let plane = new THREE.Mesh(planegeometry, planematerial);
 plane.receiveShadow = true;
 plane.position.set(0, -0.5, 0);
 plane.rotation.x = Math.PI / 2;
-scene.add(plane);
+world.add(plane);
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+const yAxis = new THREE.Vector3(0, 1, 0);
 function render(time) {
     renderer.render(scene, camera);
-    box.rotation.x = time / 1000;
-    // box.rotation.y = time / 2000;
+    trans_speed.z = forward;
+    rot_speed.setFromAxisAngle(yAxis, leftright);
+    speed_matrix.compose(trans_speed, rot_speed, scale);
+    world.matrix.premultiply(speed_matrix);
+    // world.rotation.y = time / 1000;
+    box.rotation.y = time / 2000;
 }
 
 renderer.setAnimationLoop(render);
