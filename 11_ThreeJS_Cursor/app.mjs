@@ -33,7 +33,7 @@ window.onload = function () {
 
     let rayCaster = new THREE.Raycaster();
 
-    let initialGrabbed, selectedObject;
+    let initialGrabbed, selectedObject, distance;
 
     function render() {
         let grabbed = updateByKeyboard(world);
@@ -43,26 +43,36 @@ window.onload = function () {
         cursor.matrix.decompose(position, rotation, scale);
         direction.applyQuaternion(rotation);
 
-        rayCaster.set(cursor.position, direction);
-        let intersects = rayCaster.intersectObjects(boxes);
-        if (intersects.length > 0) {
-            lineFunc(1, intersects[0].point);
-            selectedObject = intersects[0].object;
-            if (grabbed) {
-                if (initialGrabbed === undefined) {
-                    initialGrabbed = cursor.matrix.clone().invert().multiply(selectedObject.matrix);
-                } else {
-                    selectedObject.matrix.copy(cursor.matrix.clone().multiply(initialGrabbed));
-                }
+        let hitObject, hitDistance;
+        if (selectedObject === undefined) {
+            rayCaster.set(cursor.position, direction);
+            let intersects = rayCaster.intersectObjects(boxes);
+            if (intersects.length > 0) {
+                lineFunc(1, intersects[0].point);
+                hitObject = intersects[0].object;
+                hitDistance = intersects[0].distance;
             } else {
-                initialGrabbed = undefined;
-                selectedObject = undefined;
+                rayEnd.addVectors(cursor.position, direction.multiplyScalar(20));
+                lineFunc(1, rayEnd);
             }
-
-        } else {
-            rayEnd.addVectors(cursor.position, direction.multiplyScalar(20));
-            lineFunc(1, rayEnd);
         }
+
+        if (grabbed) {
+            if (selectedObject) {
+                selectedObject.matrix.copy(cursor.matrix.clone().multiply(initialGrabbed));
+                rayEnd.addVectors(cursor.position, direction.multiplyScalar(distance));
+                lineFunc(1, rayEnd);
+            } else {
+                if (hitObject) {
+                    selectedObject = hitObject;
+                    initialGrabbed = cursor.matrix.clone().invert().multiply(selectedObject.matrix);
+                    distance = hitDistance;
+                }
+            }
+        } else {
+            selectedObject = undefined;
+        }
+
 
         renderer.render(scene, camera);
     }
