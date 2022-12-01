@@ -62,12 +62,10 @@ window.onload = function () {
                 selectedObject.matrix.copy(cursor.matrix.clone().multiply(initialGrabbed));
                 rayEnd.addVectors(cursor.position, direction.multiplyScalar(distance));
                 lineFunc(1, rayEnd);
-            } else {
-                if (hitObject) {
-                    selectedObject = hitObject;
-                    initialGrabbed = cursor.matrix.clone().invert().multiply(selectedObject.matrix);
-                    distance = hitDistance;
-                }
+            } else if (hitObject) {
+                selectedObject = hitObject;
+                initialGrabbed = cursor.matrix.clone().invert().multiply(selectedObject.matrix);
+                distance = hitDistance;
             }
         } else {
             selectedObject = undefined;
