@@ -48,6 +48,54 @@ export function boxesWithPlane(parent, noOfBoxes = 100) {
     parent.add(plane);
 }
 
+export function createLine(scene) {
+    const material = new THREE.LineBasicMaterial({
+        color: 0xff0000
+    });
+
+    const points = [];
+    points.push(new THREE.Vector3(0, 0, 0));
+    points.push(new THREE.Vector3(0, 1, 0));
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const line = new THREE.Line(geometry, material);
+    scene.add(line);
+
+    let position = line.geometry.attributes.position.array;
+
+    return (idx, pos) => {
+        idx *= 3;
+        position[idx++] = pos.x;
+        position[idx++] = pos.y;
+        position[idx++] = pos.z;
+        line.geometry.attributes.position.needsUpdate = true;
+    };
+}
+
+export function boxes2Grab(parent, noOfBoxes = 100) {
+    let arr = [];
+    for (let i = 0; i < noOfBoxes; ++i) {
+        let height = Math.random() * 0.5 + 0.1;
+        let box = new THREE.Mesh(new THREE.BoxGeometry(0.1, height, 0.1), new THREE.MeshStandardMaterial({
+            color: 0x1e13f0,
+            roughness: 0.7,
+            metalness: 0.0,
+        }));
+        box.position.x = Math.random() - 0.5;
+        box.position.y = Math.random() * 0.5;
+        box.position.z = Math.random() - 0.5;
+        box.rotation.x = Math.random() * Math.PI;
+        box.rotation.z = Math.random() * Math.PI;
+        box.updateMatrix();
+        box.castShadow = true;
+        box.matrixAutoUpdate = false;
+        parent.add(box);
+        arr.push(box);
+    }
+    return arr;
+}
+
+
 export function createCursor(parent) {
     let cursor = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.2, 64), new THREE.MeshStandardMaterial({
         color: 0xff13f0,
@@ -55,6 +103,7 @@ export function createCursor(parent) {
         metalness: 0.0,
     }));
     cursor.castShadow = true;
+    // cursor.position.x = 0.5;
 
     parent.add(cursor);
     return cursor;
