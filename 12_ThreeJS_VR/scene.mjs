@@ -1,6 +1,7 @@
-import * as THREE from '../99_Lib/three.module.js';
+import * as THREE from 'three';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
 
-export function createScene() {
+export function createScene(vr_enabled = true) {
     let scene = new THREE.Scene();
     scene.add(new THREE.HemisphereLight(0x808080, 0x606060));
     let light = new THREE.DirectionalLight(0xffffff, 1);
@@ -21,7 +22,15 @@ export function createScene() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
+
+    if (vr_enabled)
+        renderer.xr.enabled = true;
+    renderer.outputEncoding = THREE.sRGBEncoding;
     document.body.appendChild(renderer.domElement);
+
+    if (vr_enabled)
+        document.body.appendChild(VRButton.createButton(renderer));
+
     return { scene, camera, renderer };
 }
 
@@ -48,71 +57,52 @@ export function boxesWithPlane(parent, noOfBoxes = 100) {
     parent.add(plane);
 }
 
-function randomColor() {
-    let grays = [];
-    let colors = [];
-    const NO_OF_COLORS = 10;
-    for (let i = 0; i < NO_OF_COLORS; ++i) {
-        let r = Math.floor(Math.random() * 256);
-        let g = Math.floor(Math.random() * 256);
-        let b = Math.floor(Math.random() * 256);
-        grays.push(new THREE.Color(`rgb(${g}, ${g}, ${g})`))
-        colors.push(new THREE.Color(`rgb(${r}, ${g}, ${b})`))
-    }
+export function createLine(scene) {
+    const material = new THREE.LineBasicMaterial({
+        color: 0xff0000
+    });
 
-    return (use_gray = false) => {
-        let idx = Math.floor(Math.random() * NO_OF_COLORS);
-        if (use_gray) {
-            return grays[idx];
-        } else {
-            return colors[idx];
-        }
+    const points = [];
+    points.push(new THREE.Vector3(0, 0, 0));
+    points.push(new THREE.Vector3(0, 1, 0));
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const line = new THREE.Line(geometry, material);
+    scene.add(line);
+
+    let position = line.geometry.attributes.position.array;
+
+    return (idx, pos) => {
+        idx *= 3;
+        position[idx++] = pos.x;
+        position[idx++] = pos.y;
+        position[idx++] = pos.z;
+        line.geometry.attributes.position.needsUpdate = true;
     };
 }
 
-
-export function randomBoxes(parent, noOfBoxes = 100) {
+export function boxes2Grab(parent, noOfBoxes = 100) {
     let arr = [];
-    const rc = randomColor();
     for (let i = 0; i < noOfBoxes; ++i) {
-        let height = Math.random() * 0.2 + 0.2;
+        let height = Math.random() * 0.5 + 0.1;
         let box = new THREE.Mesh(new THREE.BoxGeometry(0.1, height, 0.1), new THREE.MeshStandardMaterial({
-            color: rc(true),
+            color: 0x1e13f0,
             roughness: 0.7,
             metalness: 0.0,
         }));
         box.position.x = Math.random() - 0.5;
-        box.position.y = Math.random() - 0.5;
+        box.position.y = Math.random() * 0.5;
         box.position.z = Math.random() - 0.5;
         box.rotation.x = Math.random() * Math.PI;
         box.rotation.z = Math.random() * Math.PI;
-        box.castShadow = true;
         box.updateMatrix();
+        box.castShadow = true;
         box.matrixAutoUpdate = false;
         parent.add(box);
         arr.push(box);
     }
     return arr;
 }
-
-export function randomLines(parent, noOfLines = 100) {
-    const rc = randomColor();
-    for (let i = 0; i < noOfLines; ++i) {
-        const points = [];
-
-        let material = new THREE.LineBasicMaterial({
-            color: rc()
-        });
-
-        let p1 = new THREE.Vector3(0, 1, 0);
-        points.push(p1.randomDirection());
-        points.push(new THREE.Vector3(0, 0, 0));
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        parent.add(new THREE.Line(geometry, material));
-    }
-}
-
-
 
 
 export function createCursor(parent) {
@@ -122,39 +112,8 @@ export function createCursor(parent) {
         metalness: 0.0,
     }));
     cursor.castShadow = true;
+    // cursor.position.x = 0.5;
 
     parent.add(cursor);
     return cursor;
-}
-
-export function create_stretch_line(scene) {
-    let material = new THREE.LineBasicMaterial({
-        color: 0xffffff
-    });
-
-    const points = [];
-    points.push(new THREE.Vector3(- 10, 0, 0));
-    points.push(new THREE.Vector3(0, 10, 0));
-
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    let line = new THREE.Line(geometry, material);
-    scene.add(line);
-
-    // Liste der Koordinaten im Puffer
-    let positions = line.geometry.attributes.position.array;
-
-    // idx: Index des Punktes im Array: 0 oder 1
-    return (idx, pos, color) => {
-        idx *= 3;  // gehe auf x-Position
-        positions[idx++] = pos.x;
-        positions[idx++] = pos.y;
-        positions[idx++] = pos.z;
-        line.geometry.attributes.position.needsUpdate = true
-
-        // falls die Linien-Farbe geändert wurde
-        if (line.material.color !== color) {
-            line.material.color = color
-            line.material.needsUpdate = true;
-        }
-    }
 }

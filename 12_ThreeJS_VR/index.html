@@ -2,13 +2,21 @@
 <html lang="en">
 
 <head>
-    <title>Ray and Grabbing Three.js</title>
+    <title>VR Three.js</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link type="text/css" rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "../build/three.module.js",
+                "three/addons/": "../build/jsm/"
+            }
+        }
+    </script>
     <script type="module" src="app.mjs"></script>
 </body>
 

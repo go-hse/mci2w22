@@ -1,4 +1,4 @@
-import * as THREE from '../99_Lib/three.module.js';
+import * as THREE from 'three';
 
 export function keyboard() {
     let keys = {};
@@ -110,6 +110,6 @@ export function keyboardInteractionFunction() {
         rot_speed.setFromAxisAngle(new THREE.Vector3(0, 1, 0), leftright);
         speed_matrix.compose(trans_speed, rot_speed, scale);
         world.matrix.premultiply(speed_matrix);
-        return { grabbed };
+        return grabbed;
     }
 }
