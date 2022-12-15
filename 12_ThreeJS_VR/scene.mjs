@@ -2,9 +2,8 @@ import * as THREE from 'three';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 
 
-export function createArrow(parent) {
+export function createArrow(parent, color = 0xff0000, size = 0.01) {
     let shape = new THREE.Shape();
-    const size = 0.01;
     shape.moveTo(-size, -4 * size);
     shape.lineTo(size, -4 * size);
     shape.lineTo(size, size);
@@ -23,7 +22,7 @@ export function createArrow(parent) {
         bevelSegments: 1
     };
     let geo = new THREE.ExtrudeGeometry(shape, config);
-    let mesh = new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color: 0xff0000, transparent: true, opacity: 0.5 }));
+    let mesh = new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color, transparent: true, opacity: 0.5 }));
     mesh.rotation.x = -Math.PI / 2;
     let trans = new THREE.Group();
     trans.matrixAutoUpdate = false;

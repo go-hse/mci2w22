@@ -16,8 +16,11 @@ window.onload = function () {
     world.matrixAutoUpdate = false;
     scene.add(world);
 
-    let cursorFly = createArrow(scene);
+    let cursorFly = createArrow(scene, 0xff0000);
     cursorFly.visible = false;
+
+    let cursorMove = createArrow(scene, 0x00ff00, 0.012);
+    cursorMove.visible = false;
 
     boxesWithPlane(world, 100);
     let cursor = createCursor(scene);
@@ -31,6 +34,7 @@ window.onload = function () {
         cursor.visible = false;
         last_active_controller = current;
         last_active_inputsource = src;
+        console.log(`connected ${src.handedness} device`);
     });
 
     let boxes = boxes2Grab(world, 15);
@@ -64,6 +68,12 @@ window.onload = function () {
             cursor.matrix.copy(last_active_controller.matrix);
             grabbed = controller1.controller.userData.isSelecting || controller2.controller.userData.isSelecting;
             squeezed = controller1.controller.userData.isSqueezeing || controller2.controller.userData.isSqueezeing;
+
+            let gamepad = last_active_inputsource.gamepad;
+            if (gamepad.axes[2] !== 0 || gamepad.axes[3] !== 0) {
+                console.log(`axes: ${gamepad.axes[2]} ${gamepad.axes[3]} `);
+            }
+
             direction = new THREE.Vector3(0, 0, -1);
         } else {
             ({ grabbed, squeezed } = updateByKeyboard(world));
@@ -122,6 +132,7 @@ window.onload = function () {
         // Navigation
         if (squeezed) {
             if (inverseHand) {
+                cursorMove.matrix.copy(cursor.matrix);
                 lineFunc(1, initialPosition);
                 let differenceMatrix = cursor.matrix.clone().multiply(inverseHand);
                 differenceMatrix.decompose(position, rotation, scale);
@@ -134,6 +145,7 @@ window.onload = function () {
                 world.matrix.premultiply(differenceMatrix);
             } else {
                 cursorFly.visible = true;
+                cursorMove.visible = true;
                 cursorFly.matrix.copy(cursor.matrix);
                 cursor.matrix.decompose(initialPosition, rotation, scale);
                 inverseHand = cursor.matrix.clone().invert();
@@ -141,6 +153,7 @@ window.onload = function () {
         } else {
             if (inverseHand) {
                 cursorFly.visible = false;
+                cursorMove.visible = false;
                 inverseHand = undefined;
             }
         }

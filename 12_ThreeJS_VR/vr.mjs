@@ -23,7 +23,7 @@ export function createVRcontrollers(scene, renderer, connect_cb) {
             controller.userData.isSqueezeing = false;
         });
         controller.addEventListener('connected', function (event) {
-            console.log(`controller connects ${id} mode ${event.data.targetRayMode}`);
+            console.log(`controller connects ${id} mode ${event.data.targetRayMode} ${event.data.handedness} hand`);
             // inform app that we have a controller
             connect_cb(controller, event.data);
         });
@@ -31,6 +31,7 @@ export function createVRcontrollers(scene, renderer, connect_cb) {
             controller.remove(controller.children[0]);
             console.log(`controller disconnects ${id} `);
         });
+
         scene.add(controller);
 
         let controllerGrip = renderer.xr.getControllerGrip(id);
