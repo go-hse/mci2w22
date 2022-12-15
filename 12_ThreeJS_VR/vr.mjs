@@ -25,7 +25,7 @@ export function createVRcontrollers(scene, renderer, connect_cb) {
         controller.addEventListener('connected', function (event) {
             console.log(`controller connects ${id} mode ${event.data.targetRayMode}`);
             // inform app that we have a controller
-            connect_cb(controller);
+            connect_cb(controller, event.data);
         });
         controller.addEventListener('disconnected', () => {
             controller.remove(controller.children[0]);
