@@ -1,6 +1,37 @@
 import * as THREE from 'three';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 
+
+export function createArrow(parent) {
+    let shape = new THREE.Shape();
+    const size = 0.01;
+    shape.moveTo(-size, -4 * size);
+    shape.lineTo(size, -4 * size);
+    shape.lineTo(size, size);
+    shape.lineTo(2 * size, size);
+    shape.lineTo(0, 3 * size);
+    shape.lineTo(-2 * size, size);
+    shape.lineTo(-size, size);
+
+    const config = {
+        steps: 4,
+        depth: size / 2,
+        bevelEnabled: true,
+        bevelThickness: size / 10,
+        bevelSize: size,
+        bevelOffset: 0,
+        bevelSegments: 1
+    };
+    let geo = new THREE.ExtrudeGeometry(shape, config);
+    let mesh = new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color: 0xff0000, transparent: true, opacity: 0.5 }));
+    mesh.rotation.x = -Math.PI / 2;
+    let trans = new THREE.Group();
+    trans.matrixAutoUpdate = false;
+    trans.add(mesh);
+    parent.add(trans);
+    return trans;
+}
+
 export function createScene(vr_enabled = true) {
     let scene = new THREE.Scene();
     scene.add(new THREE.HemisphereLight(0x808080, 0x606060));

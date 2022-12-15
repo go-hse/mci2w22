@@ -70,7 +70,7 @@ export function mouse(cursor) {
 
 
 export function keyboardInteractionFunction() {
-    let forward = 0, leftright = 0, speed = 0.01, grabbed = false;
+    let forward = 0, leftright = 0, speed = 0.01, grabbed = false, squeezed = false;
 
     let addKey = keyboard();
 
@@ -99,6 +99,9 @@ export function keyboardInteractionFunction() {
         grabbed = down;
     });
 
+    addKey("s", down => {
+        squeezed = down;
+    });
 
     let rot_speed = new THREE.Quaternion();
     let trans_speed = new THREE.Vector3();
@@ -110,6 +113,6 @@ export function keyboardInteractionFunction() {
         rot_speed.setFromAxisAngle(new THREE.Vector3(0, 1, 0), leftright);
         speed_matrix.compose(trans_speed, rot_speed, scale);
         world.matrix.premultiply(speed_matrix);
-        return grabbed;
+        return { grabbed, squeezed };
     }
 }

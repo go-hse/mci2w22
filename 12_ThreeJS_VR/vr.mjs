@@ -16,11 +16,11 @@ export function createVRcontrollers(scene, renderer, connect_cb) {
         });
         controller.addEventListener('squeezestart', () => {
             console.log(`Controller ${id} squeezes`);
-            controller.userData.issqueezeing = true;
+            controller.userData.isSqueezeing = true;
         });
         controller.addEventListener('squeezeend', () => {
             console.log(`Controller ${id} squeeze ends`);
-            controller.userData.issqueezeing = false;
+            controller.userData.isSqueezeing = false;
         });
         controller.addEventListener('connected', function (event) {
             console.log(`controller connects ${id} mode ${event.data.targetRayMode}`);
@@ -36,7 +36,7 @@ export function createVRcontrollers(scene, renderer, connect_cb) {
         let controllerGrip = renderer.xr.getControllerGrip(id);
         controllerGrip.add(controllerModelFactory.createControllerModel(controllerGrip));
         scene.add(controllerGrip);
-        return controller;
+        return { controller, controllerGrip };
     }
     let controller1 = getController(0);
     let controller2 = getController(1);

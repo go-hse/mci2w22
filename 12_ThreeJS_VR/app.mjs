@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 
 import { mouse, keyboardInteractionFunction } from "./mouse_keyboard.mjs"
-import { createScene, boxesWithPlane, createCursor, boxes2Grab, createLine } from './scene.mjs';
+import { createScene, boxesWithPlane, createCursor, boxes2Grab, createLine, createArrow } from './scene.mjs';
 import { createVRcontrollers } from './vr.mjs';
 
 window.onload = function () {
@@ -16,9 +16,12 @@ window.onload = function () {
     world.matrixAutoUpdate = false;
     scene.add(world);
 
-    boxesWithPlane(world, 1000);
+    let cursorFly = createArrow(scene);
+    cursorFly.visible = false;
 
+    boxesWithPlane(world, 100);
     let cursor = createCursor(scene);
+
     mouse(cursor);
 
     let last_active_controller;
@@ -29,7 +32,7 @@ window.onload = function () {
         last_active_controller = current;
     });
 
-    let boxes = boxes2Grab(scene, 30);
+    let boxes = boxes2Grab(world, 15);
     let lineFunc = createLine(scene);
 
     const updateByKeyboard = keyboardInteractionFunction();
@@ -41,21 +44,28 @@ window.onload = function () {
     let rotation = new THREE.Quaternion();
     let scale = new THREE.Vector3();
 
+    // flying
+    let initialPosition = new THREE.Vector3();
+    let deltaFlyRotation = new THREE.Quaternion();
+    const flySpeedRotationFactor = 0.01;
+    const flySpeedTranslationFactor = -0.02;
+
     let rayCaster = new THREE.Raycaster();
 
     // 
-    let initialGrabbed, selectedObject, distance;
+    let initialGrabbed, inverseHand, inverseWorld, selectedObject, distance;
 
     function render() {
-        let grabbed, direction;
+        let grabbed, squeezed, direction;
 
         // cursor is controlled by VR-interface OR by mouse/keyboard
         if (last_active_controller) {
             cursor.matrix.copy(last_active_controller.matrix);
-            grabbed = controller1.userData.isSelecting || controller2.userData.isSelecting;
+            grabbed = controller1.controller.userData.isSelecting || controller2.controller.userData.isSelecting;
+            squeezed = controller1.controller.userData.isSqueezeing || controller2.controller.userData.isSqueezeing;
             direction = new THREE.Vector3(0, 0, -1);
         } else {
-            grabbed = updateByKeyboard(world);
+            ({ grabbed, squeezed } = updateByKeyboard(world));
             direction = new THREE.Vector3(0, 1, 0);
         }
 
@@ -83,18 +93,56 @@ window.onload = function () {
         if (grabbed) {
             // if an object is already connected
             if (selectedObject) {
-                selectedObject.matrix.copy(cursor.matrix.clone().multiply(initialGrabbed));
+                selectedObject.matrix.copy(inverseWorld.clone().multiply(cursor.matrix).multiply(initialGrabbed));
                 rayEnd.addVectors(position, direction.multiplyScalar(distance));
                 lineFunc(1, rayEnd);
             } else if (hitObject) { // connect the hit object with the hand
                 selectedObject = hitObject;
-                initialGrabbed = cursor.matrix.clone().invert().multiply(selectedObject.matrix);
+                inverseWorld = world.matrix.clone().invert();
+                initialGrabbed = cursor.matrix.clone().invert().multiply(world.matrix).multiply(selectedObject.matrix);
                 distance = hitDistance;
+            } else {
+                // grab the scene if no object is hit
+                if (initialGrabbed) {
+                    world.matrix.copy(cursor.matrix.clone().multiply(initialGrabbed));
+                } else {
+                    initialGrabbed = cursor.matrix.clone().invert().multiply(world.matrix);
+                }
             }
         } else {
-            selectedObject = undefined;
+            if (selectedObject) {
+                selectedObject = undefined;
+            }
+            if (initialGrabbed)
+                initialGrabbed = undefined;
         }
 
+
+        // Navigation
+        if (squeezed) {
+            if (inverseHand) {
+                lineFunc(1, initialPosition);
+                let differenceMatrix = cursor.matrix.clone().multiply(inverseHand);
+                differenceMatrix.decompose(position, rotation, scale);
+
+                // Reduce the rotation by factor 0.01
+                deltaFlyRotation.set(0, 0, 0, 1);
+                deltaFlyRotation.slerp(rotation.conjugate(), flySpeedRotationFactor);
+
+                differenceMatrix.compose(position.multiplyScalar(flySpeedTranslationFactor), deltaFlyRotation, scale);
+                world.matrix.premultiply(differenceMatrix);
+            } else {
+                cursorFly.visible = true;
+                cursorFly.matrix.copy(cursor.matrix);
+                cursor.matrix.decompose(initialPosition, rotation, scale);
+                inverseHand = cursor.matrix.clone().invert();
+            }
+        } else {
+            if (inverseHand) {
+                cursorFly.visible = false;
+                inverseHand = undefined;
+            }
+        }
 
         renderer.render(scene, camera);
     }
