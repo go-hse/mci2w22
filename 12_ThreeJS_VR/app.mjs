@@ -24,12 +24,13 @@ window.onload = function () {
 
     mouse(cursor);
 
-    let last_active_controller;
-    let { controller1, controller2 } = createVRcontrollers(scene, renderer, (current) => {
+    let last_active_controller, last_active_inputsource;
+    let { controller1, controller2 } = createVRcontrollers(scene, renderer, (current, src) => {
         // called if/when controllers connect
         cursor.matrixAutoUpdate = false;
         cursor.visible = false;
         last_active_controller = current;
+        last_active_inputsource = src;
     });
 
     let boxes = boxes2Grab(world, 15);
