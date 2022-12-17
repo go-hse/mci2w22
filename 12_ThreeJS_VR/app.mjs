@@ -21,7 +21,6 @@ window.onload = function () {
 
     boxesWithPlane(world, 100);
     let cursor = createCursor(scene);
-
     mouse(cursor);
 
     let last_active_controller, last_active_inputsource;
