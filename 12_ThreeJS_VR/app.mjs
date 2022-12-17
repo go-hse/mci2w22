@@ -1,6 +1,3 @@
-// Mini Three.js
-
-
 import * as THREE from 'three';
 
 import { mouse, keyboardInteractionFunction } from "./mouse_keyboard.mjs"
