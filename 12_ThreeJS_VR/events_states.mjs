@@ -40,7 +40,6 @@ export function Statemachine(states) {
 		});
 	}
 
-
 	states.forEach(state => {
 		for (const thisstate in state) {
 			const followers = state[thisstate];
@@ -59,13 +58,13 @@ export function Statemachine(states) {
 const states = [{
 	main: {
 		grabOn: "grabbing",
-		menuOn: "resetScene",
+		lightOn: "doSomething",
 	},
 	grabbing: {
 		grabOff: "main",
 	},
-	resetScene: {
-		tick: "main",
+	doSomething: {
+		lightOff: "main",
 	},
 
 }];

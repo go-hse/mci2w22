@@ -5,6 +5,10 @@ import { createScene, boxesWithPlane, createCursor, boxes2Grab, createLine, crea
 import { createVRcontrollers } from './vr.mjs';
 import { eventbus } from './events_states.mjs';
 import { Billboard } from './billboard.mjs';
+import { proximitySensor } from './proximity.mjs';
+import { audioPlayer } from './audio.mjs';
+
+
 
 window.onload = function () {
     console.log(`ThreeJs ${THREE.REVISION} at ${new Date()}`);
@@ -17,6 +21,8 @@ window.onload = function () {
     world.matrixAutoUpdate = false;
     scene.add(world);
 
+    proximitySensor(scene, "light", new THREE.Vector3(0, 1, 0), eventbus);
+
     let cursorFly = createArrow(scene, 0xff0000);
     cursorFly.visible = false;
 
@@ -26,6 +32,9 @@ window.onload = function () {
     boxesWithPlane(world, 100);
     let cursor = createCursor(scene);
     mouse(cursor);
+
+    audioPlayer(camera, cursor, "./sounds/short.mp3", eventbus);
+    // audioPlayer(camera, cursor, "./sounds/ping_pong.mp3", eventbus);
 
     let last_active_controller, last_active_inputsource;
     let { controller1, controller2 } = createVRcontrollers(scene, renderer, (current, src) => {
@@ -77,6 +86,9 @@ window.onload = function () {
         }
 
         cursor.matrix.decompose(position, rotation, scale);
+
+        eventbus.publish("cursor_position", position);
+
         lineFunc(0, position);
         direction.applyQuaternion(rotation);
 
@@ -156,6 +168,7 @@ window.onload = function () {
 
         bill.printLines();
         renderer.render(scene, camera);
+        eventbus.publish("endofframe", true);
     }
     renderer.setAnimationLoop(render);
 };
