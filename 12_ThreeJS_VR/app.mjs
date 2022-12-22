@@ -3,11 +3,15 @@ import * as THREE from 'three';
 import { mouse, keyboardInteractionFunction } from "./mouse_keyboard.mjs"
 import { createScene, boxesWithPlane, createCursor, boxes2Grab, createLine, createArrow } from './scene.mjs';
 import { createVRcontrollers } from './vr.mjs';
+import { eventbus } from './events_states.mjs';
+import { Billboard } from './billboard.mjs';
 
 window.onload = function () {
     console.log(`ThreeJs ${THREE.REVISION} at ${new Date()}`);
 
     let { scene, camera, renderer } = createScene(true);
+    let bill = Billboard(scene, "./background.png");
+    bill.addLine(`ThreeJs ${THREE.REVISION}`)
 
     let world = new THREE.Group();
     world.matrixAutoUpdate = false;
@@ -36,7 +40,7 @@ window.onload = function () {
     let boxes = boxes2Grab(world, 15);
     let lineFunc = createLine(scene);
 
-    const updateByKeyboard = keyboardInteractionFunction();
+    const updateByKeyboard = keyboardInteractionFunction(eventbus);
 
     let rayEnd = new THREE.Vector3();
 
@@ -64,12 +68,8 @@ window.onload = function () {
             cursor.matrix.copy(last_active_controller.matrix);
             grabbed = controller1.controller.userData.isSelecting || controller2.controller.userData.isSelecting;
             squeezed = controller1.controller.userData.isSqueezeing || controller2.controller.userData.isSqueezeing;
-
             let gamepad = last_active_inputsource.gamepad;
-            if (gamepad.axes[2] !== 0 || gamepad.axes[3] !== 0) {
-                console.log(`axes: ${gamepad.axes[2]} ${gamepad.axes[3]} `);
-            }
-
+            bill.touch(gamepad.axes[2], gamepad.axes[3]);
             direction = new THREE.Vector3(0, 0, -1);
         } else {
             ({ grabbed, squeezed } = updateByKeyboard(world));
@@ -154,6 +154,7 @@ window.onload = function () {
             }
         }
 
+        bill.printLines();
         renderer.render(scene, camera);
     }
     renderer.setAnimationLoop(render);

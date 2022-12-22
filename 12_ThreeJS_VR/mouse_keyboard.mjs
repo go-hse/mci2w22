@@ -69,7 +69,7 @@ export function mouse(cursor) {
 }
 
 
-export function keyboardInteractionFunction() {
+export function keyboardInteractionFunction(eventbus) {
     let forward = 0, leftright = 0, speed = 0.01, grabbed = false, squeezed = false;
 
     let addKey = keyboard();
@@ -97,10 +97,14 @@ export function keyboardInteractionFunction() {
 
     addKey(" ", down => {
         grabbed = down;
+        const key = down ? "On" : "Off";
+        eventbus.publish(`grab${key}`, down)
     });
 
     addKey("s", down => {
         squeezed = down;
+        const key = down ? "On" : "Off";
+        eventbus.publish(`sqeeze${key}`, down)
     });
 
     let rot_speed = new THREE.Quaternion();
